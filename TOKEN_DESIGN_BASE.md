@@ -17,7 +17,8 @@
 >
 > 3. **BOT の発行チェーンは awai L1**（whitepaper §7、root ADR-2610271900「Base / Circle 非依存、発行面を awai L1 へ」）。
 >    BOT は awai L1 上の contract（ERC-20 形、decimals 18）とし、Base には deploy しない。
->    Base は x402 の USDC を受ける外部 rail として残る。Base 等の外部市場への bridge は後続 ADR で決める。
+>    Base は x402 の USDC を受ける外部 rail として残る。awai 外への bridge は [network-awai-apex ADR 0025](https://github.com/network-awai/network-awai-apex/blob/main/docs/adr/0025-bridge-and-thorchain.md)（Proposed）で設計する。
+>    KUMO・BOT は canonical bridge（awai L1 で lock、外部の EVM で wrapped を mint）、native 資産（BTC 等）との交換は THORChain の経路。EN・ENGI は bridge しない。
 >
 > 本文の KUMO・交換規則・BOT の発行チェーン（§0・§1・§2・§3・§4・§5・§8・§9・§10・§12）はこれに合わせて改めた。
 > §3.1・§5・§6・§10 の Base の実測値は、2026-08-31 時点の記録として残す。BOT の発行計画としては撤回する。
@@ -136,8 +137,10 @@ sector       KUMO（演算。awai L1 の固定供給 contract。mint 経路な�
 | KUMO ↔ YATA ↔ BOT（torihiki 上の市場交換） | 可。protocol は比率を定めず、oracle を持たない |
 | BOT → YATA（protocol の burn + credit） | 可（一方向） |
 | BOT ↔ USDC（torihiki 上の市場） | 可 |
-| BOT ↔ USDC / fiat（awai 外の外部市場） | bridge の後続 ADR |
-| KUMO / YATA の awai 外の市場（bridge） | 後続 ADR |
+| BOT ↔ USDC / fiat（awai 外の外部市場） | canonical bridge（awBOT）または THORChain の経路（ADR 0025） |
+| KUMO の awai 外の市場 | canonical bridge（awKUMO、ADR 0025） |
+| YATA の awai 外の市場 | 保留（on-chain の表現が未決） |
+| EN・ENGI の bridge | **禁止** |
 | EN ↔ いずれの単位・通貨 | **禁止**（交換不可） |
 | x402 を BOT で払う | 可。受領した BOT は **burn** |
 
@@ -277,7 +280,7 @@ requirement は既に**複数 asset を配列で返せる形**を持つので、
 | 0（現在） | 設計のみ。contract 無し・配布無し・上場無し。§10 の 5 件が開いている |
 | 1 | awai L1 に `BOT` を deploy、torihiki に `BOT` の市場を作る、sink (a) をβで通す（旧版: Base に deploy） |
 | 2 | sink (b)(c)(d)、worker 報酬のオンチェーン分配、可視化ダッシュボード |
-| 3 | 手数料設計の最適化、Base 等の外部チェーンへの bridge（後続 ADR） |
+| 3 | 手数料設計の最適化、Base 等の外部チェーンへの bridge と THORChain の経路（ADR 0025 の B1〜B3） |
 
 ---
 
@@ -338,5 +341,5 @@ token は capital を連れてくるが settlement demand は連れてこない�
    `FiatTokenProxy` を採ると先例と逆になる
 5. ~~Uniswap v3 を採るか、Base のネイティブ DEX を採るか~~ → torihiki に決定（2026-11-03、BOT は awai L1）
 6. **KUMO の配分と外部変換**（2026-11-03 追加）。固定供給 21 億の配分経路、decimals、外部市場への変換の可否は、whitepaper §7 のとおり後続 ADR で決める
-7. ~~BOT の発行チェーン~~ → **awai L1 に決定**（owner 2026-11-03）。残るのは、awai L1 上の発行権限（Safe の代わり）の形、EIP-3009 の実装、Base への bridge の可否
-8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。KUMO・YATA の awai 外の市場、YATA の on-chain 表現、上場の審査主体は未決
+7. ~~BOT の発行チェーン~~ → **awai L1 に決定**（owner 2026-11-03）。残るのは、awai L1 上の発行権限（Safe の代わり）の形と、EIP-3009 の実装。Base への bridge は ADR 0025 で設計中
+8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。bridge は ADR 0025（Proposed）で設計した。YATA の on-chain 表現、上場の審査主体、ADR 0025 の owner decisions D1〜D7 は未決
