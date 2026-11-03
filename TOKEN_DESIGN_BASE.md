@@ -11,7 +11,7 @@
 >    旧来の「台帳内の KUMO」（fee-plane ledger）は、murakumo.cloud の前払い残高（単位名なし）に改名済みである
 >    （`network-awai/cloud-murakumo` 21fa5d4、2026-10-13）。
 > 2. **交換性（Holochain の HoloFuel / HOT の分け方を参考にする）**: **EN は交換不可**（相互信用の gas。市場・peg・上場なし）。
->    **KUMO・YATA・BOT などの sector token は市場で交換してよい**。交換の場は **torihiki を Itonami の dapp とした DEX** とする
+>    **KUMO・YATA・TAMA・BOT などの sector token は市場で交換してよい**（TAMA は 2026-11-04 に追加。network-awai-apex ADR 0023 D2）。交換の場は **torihiki を Itonami の dapp とした DEX** とする
 >    （[network-awai-apex ADR 0024](https://github.com/network-awai/network-awai-apex/blob/main/docs/adr/0024-en-non-exchangeable-and-torihiki-dex.md)）。
 >    発行体による買い戻し、protocol による換金、protocol が定める交換比率と oracle は、引き続き持たない。
 >
@@ -47,7 +47,7 @@ ERC-20 にして DEX に載せた瞬間に外部価格が付き、**償還不能
 市場で売れるなら、それは償還できるのと同じである。
 
 > 2026-11-03 改訂: この議論は「計算クレジット（前払い残高）」には引き続き当てはまり、前払い残高は市場に出さない。
-> 一方、KUMO・YATA・BOT などの sector token は、owner 決定で torihiki DEX での市場交換を許す。
+> 一方、KUMO・YATA・TAMA・BOT などの sector token は、owner 決定で torihiki DEX での市場交換を許す。
 > その場合の「償還不能」は、発行体の買い戻しと protocol による換金がないことを指す。
 
 したがって前版の `GCC` は 2 つに分かれる:
@@ -139,7 +139,7 @@ sector       KUMO（演算。awai L1 の固定供給 contract。mint 経路な�
 | BOT ↔ USDC（torihiki 上の市場） | 可 |
 | BOT ↔ USDC / fiat（awai 外の外部市場） | canonical bridge（awBOT）または THORChain の経路（ADR 0025） |
 | KUMO の awai 外の市場 | canonical bridge（awKUMO、ADR 0025） |
-| YATA の awai 外の市場 | 保留（on-chain の表現が未決） |
+| YATA・TAMA の awai 外の市場 | どちらも交換可能（2026-11-04）。awai L1 上の contract の表現が決まってから canonical bridge の対象に加える（ADR 0025） |
 | EN・ENGI の bridge | **禁止** |
 | EN ↔ いずれの単位・通貨 | **禁止**（交換不可） |
 | x402 を BOT で払う | 可。受領した BOT は **burn** |
@@ -342,4 +342,4 @@ token は capital を連れてくるが settlement demand は連れてこない�
 5. ~~Uniswap v3 を採るか、Base のネイティブ DEX を採るか~~ → torihiki に決定（2026-11-03、BOT は awai L1）
 6. **KUMO の配分と外部変換**（2026-11-03 追加）。固定供給 21 億の配分経路、decimals、外部市場への変換の可否は、whitepaper §7 のとおり後続 ADR で決める
 7. ~~BOT の発行チェーン~~ → **awai L1 に決定**（owner 2026-11-03）。残るのは、awai L1 上の発行権限（Safe の代わり）の形と、EIP-3009 の実装。Base への bridge は ADR 0025 で設計中
-8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。bridge は ADR 0025（Proposed）で設計した。YATA の on-chain 表現、上場の審査主体、ADR 0025 の owner decisions D1〜D7 は未決
+8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。bridge は ADR 0025（Proposed）で設計した。YATA・TAMA の on-chain 表現、上場の審査主体、ADR 0025 の owner decisions D1〜D7 は未決
