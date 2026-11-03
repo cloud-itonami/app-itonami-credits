@@ -4,13 +4,18 @@
 **対象チェーン**: Base — CAIP-2 `eip155:8453`
 **トレジャリー**: Safe `eth:0xA00366234D29d4F882088048c0B2fa0dB7302D4E`（Base / Ethereum とも同一アドレス）
 
-> **2026-11-03 改訂（KUMO のみ）**: KUMO は [awai 経済圏ホワイトペーパー v2](https://github.com/network-awai/network-awai-apex/blob/main/docs/awai-economy-whitepaper.md) §7 と
-> root ADR-2610131800 に合わせる（owner 決定）。KUMO は **murakumo の演算の protocol token で、awai L1 上の contract、
-> 固定供給 ERC-20 形、上限 21 億**。protocol による換金はせず、KUMO / YATA / BOT / EN は相互換算しない。
-> 外部変換は発行面と分け、後続 ADR で決める。本文の KUMO の記述はこれに合わせて改めた。
-> 旧来の「台帳内の KUMO」（fee-plane ledger）は、murakumo.cloud の前払い残高（単位名なし）に改名済みである
-> （`network-awai/cloud-murakumo` 21fa5d4、2026-10-13）。
-> **BOT・YATA・Base に関する記述は今回の範囲外**。whitepaper（ADR-2610271900: Base / Circle 非依存、発行面を awai L1 へ。相互換算なし）との整合は未確認で、§12 に残す。
+> **2026-11-03 改訂（owner 決定）**
+>
+> 1. **KUMO** は [awai 経済圏ホワイトペーパー v2](https://github.com/network-awai/network-awai-apex/blob/main/docs/awai-economy-whitepaper.md) §7 と
+>    root ADR-2610131800 に合わせる。KUMO は **murakumo の演算の protocol token で、awai L1 上の contract、固定供給 ERC-20 形、上限 21 億**。
+>    旧来の「台帳内の KUMO」（fee-plane ledger）は、murakumo.cloud の前払い残高（単位名なし）に改名済みである
+>    （`network-awai/cloud-murakumo` 21fa5d4、2026-10-13）。
+> 2. **交換性（Holochain の HoloFuel / HOT の分け方を参考にする）**: **EN は交換不可**（相互信用の gas。市場・peg・上場なし）。
+>    **KUMO・YATA・BOT などの sector token は市場で交換してよい**。交換の場は **torihiki を Itonami の dapp とした DEX** とする
+>    （[network-awai-apex ADR 0024](https://github.com/network-awai/network-awai-apex/blob/main/docs/adr/0024-en-non-exchangeable-and-torihiki-dex.md)）。
+>    発行体による買い戻し、protocol による換金、protocol が定める交換比率と oracle は、引き続き持たない。
+>
+> 本文の KUMO と交換規則（§0・§2・§4・§9・§12）はこれに合わせて改めた。BOT の発行チェーン（Base）と whitepaper（ADR-2610271900: 発行面を awai L1 へ）の整合は未確認で、§12 に残す。
 
 ---
 
@@ -34,6 +39,10 @@
 演算の対価となる計算クレジットは、償還不能でなければならない。
 ERC-20 にして DEX に載せた瞬間に外部価格が付き、**償還不能性が実効的に失効する** ——
 市場で売れるなら、それは償還できるのと同じである。
+
+> 2026-11-03 改訂: この議論は「計算クレジット（前払い残高）」には引き続き当てはまり、前払い残高は市場に出さない。
+> 一方、KUMO・YATA・BOT などの sector token は、owner 決定で torihiki DEX での市場交換を許す。
+> その場合の「償還不能」は、発行体の買い戻しと protocol による換金がないことを指す。
 
 したがって前版の `GCC` は 2 つに分かれる:
 
@@ -93,35 +102,37 @@ GCC は計算クレジットでありながら DEX で売買される前提を�
 | **contract** | **awai L1 上の contract（固定供給 ERC-20 形）** | **無し** | **ERC-20 on Base** |
 | 保有者間移転 | 可 | 可（台帳内） | 可（on-chain） |
 | fiat / USDC へ償還 | **不可**（protocol による換金はしない） | **不可** | 外部市場でのみ売れる。発行体は買い戻さない |
-| 外部市場での取引 | **発行面と分離し、後続 ADR で決める**（whitepaper §7） | **不可** | **可**（唯一の投機面） |
-| 相互交換 | **KUMO ↮ YATA・BOT・EN は禁止**（相互換算なし） | KUMO ↮ YATA は禁止 | BOT → YATA は可、逆は禁止。BOT → KUMO は不可 |
+| 市場での取引 | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX と外部市場） |
+| 相互交換 | 市場で可（protocol は比率を定めない）。**EN とは不可** | 同左 | 同左。加えて protocol の BOT → YATA（burn + credit）が可 |
 
-**KUMO ↔ YATA を直接交換できないことが設計の要である。** 通せば内部為替が生まれ、
-レートの oracle が要り、裁定の対象になる。YATA が要るなら「KUMO を売る」のではなく
-**junbi から YATA を買う**。KUMO は固定供給で、junbi からの mint 経路を持たない（2026-11-03 改訂）。
+**2026-11-03 改訂: KUMO ↔ YATA ↔ BOT の市場交換を許す。** 旧版は「KUMO ↔ YATA を直接交換できないこと」を
+設計の要としていた。理由は、内部為替が生まれ、レートの oracle が要り、裁定の対象になることだった。
+改訂後もこの懸念は protocol の側で避ける。**protocol は交換比率を定めず、oracle を持たず、どの protocol の経路も
+sector token 間の価格に依存しない**。価格は torihiki の市場で決まるだけで、裁定は市場の参加者の行為として扱う。
+**EN だけは交換不可**とし、市場・peg・上場の対象にしない。KUMO は固定供給で、junbi からの mint 経路を持たない。
 
 ### 膜の通過規則（ここに無い流れは実装しない）
 
 ```
-準圏 junbi   USDC / fiat / BOT（交換可能・外部市場・唯一の投機面）
-     │ mint（一方向）
+準圏 junbi   USDC / fiat / BOT
+     │ mint（一方向。YATA のみ）
      ▼
-労圏 labour  KUMO（演算。awai L1 の固定供給 contract。mint 経路なし）
-             YATA（保管）  ← どちらも償還不可
-             KUMO ↮ YATA・BOT・EN 禁止（相互換算なし）
-縁圏 EN      非価格・非発行・非交換。一切触らない
+sector       KUMO（演算。awai L1 の固定供給 contract。mint 経路なし）
+             YATA（保管）  BOT
+             ↕ torihiki DEX（Itonami dapp）で市場交換。protocol は比率を定めない
+縁圏 EN      交換不可。非価格・非上場・peg なし。一切触らない
 ```
 
 | 流れ | 可否 |
 |---|---|
 | fiat / USDC → YATA | 可（一方向 mint） |
-| fiat / USDC → KUMO | **不可**（固定供給。新規 mint しない） |
-| KUMO / YATA → fiat / USDC | **禁止** |
-| KUMO ↔ YATA | **双方向とも禁止** |
-| BOT → YATA | 可（一方向） |
-| BOT → KUMO | **禁止**（相互換算なし。whitepaper §5・§7） |
-| KUMO / YATA → BOT | **禁止** |
+| fiat / USDC → KUMO | **mint は不可**（固定供給）。torihiki の市場での購入は可 |
+| KUMO / YATA / BOT → fiat / USDC（発行体・protocol による換金） | **禁止** |
+| KUMO ↔ YATA ↔ BOT（torihiki 上の市場交換） | 可。protocol は比率を定めず、oracle を持たない |
+| BOT → YATA（protocol の burn + credit） | 可（一方向） |
 | BOT ↔ USDC / fiat（外部市場） | 可 |
+| KUMO / YATA の awai 外の市場（bridge） | 後続 ADR |
+| EN ↔ いずれの単位・通貨 | **禁止**（交換不可） |
 | x402 を BOT で払う | 可。受領した BOT は **burn** |
 
 **BOT → YATA は 2 段で実装する**: on-chain の BOT burn と、台帳への credit。
@@ -312,4 +323,5 @@ token は capital を連れてくるが settlement demand は連れてこない�
    `FiatTokenProxy` を採ると先例と逆になる
 5. Uniswap v3 を採るか、Base のネイティブ DEX を採るか
 6. **KUMO の配分と外部変換**（2026-11-03 追加）。固定供給 21 億の配分経路、decimals、外部市場への変換の可否は、whitepaper §7 のとおり後続 ADR で決める
-7. **BOT・YATA・Base の記述と whitepaper v2 の整合**（2026-11-03 追加）。whitepaper は発行面を awai L1 に揃え（ADR-2610271900）、KUMO / YATA / BOT / EN の相互換算をしないとする。本書の「BOT は ERC-20 on Base」「BOT → YATA は可」と食い違う可能性があり、未確認
+7. **BOT の発行チェーンと whitepaper v2 の整合**（2026-11-03 追加）。whitepaper は発行面を awai L1 に揃える（ADR-2610271900）。本書の「BOT は ERC-20 on Base」と食い違う可能性があり、未確認
+8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。KUMO・YATA の awai 外の市場、YATA の on-chain 表現、上場の審査主体は未決
