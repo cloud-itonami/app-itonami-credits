@@ -1,7 +1,7 @@
-# Base トークン設計（BOT / KUMO / YATA）
+# トークン設計（BOT / KUMO / YATA）— 旧 Base 版を awai L1 へ改訂中
 
 **正本の決定**: ADR-2608311800（発行チェーンと contract）+ ADR-2608291009（3 単位の型と膜規則）
-**対象チェーン**: Base — CAIP-2 `eip155:8453`
+**対象チェーン**: **awai L1**（2026-11-03 owner 決定。KUMO・BOT とも発行面は awai L1）。旧版は Base — CAIP-2 `eip155:8453`
 **トレジャリー**: Safe `eth:0xA00366234D29d4F882088048c0B2fa0dB7302D4E`（Base / Ethereum とも同一アドレス）
 
 > **2026-11-03 改訂（owner 決定）**
@@ -15,7 +15,12 @@
 >    （[network-awai-apex ADR 0024](https://github.com/network-awai/network-awai-apex/blob/main/docs/adr/0024-en-non-exchangeable-and-torihiki-dex.md)）。
 >    発行体による買い戻し、protocol による換金、protocol が定める交換比率と oracle は、引き続き持たない。
 >
-> 本文の KUMO と交換規則（§0・§2・§4・§9・§12）はこれに合わせて改めた。BOT の発行チェーン（Base）と whitepaper（ADR-2610271900: 発行面を awai L1 へ）の整合は未確認で、§12 に残す。
+> 3. **BOT の発行チェーンは awai L1**（whitepaper §7、root ADR-2610271900「Base / Circle 非依存、発行面を awai L1 へ」）。
+>    BOT は awai L1 上の contract（ERC-20 形、decimals 18）とし、Base には deploy しない。
+>    Base は x402 の USDC を受ける外部 rail として残る。Base 等の外部市場への bridge は後続 ADR で決める。
+>
+> 本文の KUMO・交換規則・BOT の発行チェーン（§0・§1・§2・§3・§4・§5・§8・§9・§10・§12）はこれに合わせて改めた。
+> §3.1・§5・§6・§10 の Base の実測値は、2026-08-31 時点の記録として残す。BOT の発行計画としては撤回する。
 
 ---
 
@@ -86,7 +91,7 @@ GCC は計算クレジットでありながら DEX で売買される前提を�
 
 ## 1. 目的
 
-営み bot が働いて得た **収入** を裏付けに `BOT` を発行し、Base 上で購入・swap 可能にする。
+営み bot が働いて得た **収入** を裏付けに `BOT` を awai L1 上で発行し、torihiki（Itonami dapp の DEX）で購入・swap 可能にする。
 `YATA`（保管）は台帳内の計量単位として、`KUMO`（演算）は awai L1 上の固定供給 contract（whitepaper §7）として、その経済圏の消費側を担う。
 
 ---
@@ -99,10 +104,10 @@ GCC は計算クレジットでありながら DEX で売買される前提を�
 | 圏 | 労圏 | 労圏 | **準圏（junbi）** |
 | 単位 | 個（decimals は whitepaper / 後続 ADR） | **GB-month**（+ egress GB は別単位） | 個 |
 | 供給 | **固定供給、上限 21 億** | 耐久性チャレンジに通った GB-month に応じて発行 | 外部で実際に決済された収入に応じて発行 |
-| **contract** | **awai L1 上の contract（固定供給 ERC-20 形）** | **無し** | **ERC-20 on Base** |
-| 保有者間移転 | 可 | 可（台帳内） | 可（on-chain） |
+| **contract** | **awai L1 上の contract（固定供給 ERC-20 形）** | **無し** | **awai L1 上の contract（ERC-20 形、decimals 18）** |
+| 保有者間移転 | 可 | 可（台帳内） | 可（awai L1） |
 | fiat / USDC へ償還 | **不可**（protocol による換金はしない） | **不可** | 外部市場でのみ売れる。発行体は買い戻さない |
-| 市場での取引 | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX と外部市場） |
+| 市場での取引 | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX。awai 外の市場は後続 ADR） | **可**（torihiki DEX。Base 等の外部市場は bridge の後続 ADR） |
 | 相互交換 | 市場で可（protocol は比率を定めない）。**EN とは不可** | 同左 | 同左。加えて protocol の BOT → YATA（burn + credit）が可 |
 
 **2026-11-03 改訂: KUMO ↔ YATA ↔ BOT の市場交換を許す。** 旧版は「KUMO ↔ YATA を直接交換できないこと」を
@@ -130,7 +135,8 @@ sector       KUMO（演算。awai L1 の固定供給 contract。mint 経路な�
 | KUMO / YATA / BOT → fiat / USDC（発行体・protocol による換金） | **禁止** |
 | KUMO ↔ YATA ↔ BOT（torihiki 上の市場交換） | 可。protocol は比率を定めず、oracle を持たない |
 | BOT → YATA（protocol の burn + credit） | 可（一方向） |
-| BOT ↔ USDC / fiat（外部市場） | 可 |
+| BOT ↔ USDC（torihiki 上の市場） | 可 |
+| BOT ↔ USDC / fiat（awai 外の外部市場） | bridge の後続 ADR |
 | KUMO / YATA の awai 外の市場（bridge） | 後続 ADR |
 | EN ↔ いずれの単位・通貨 | **禁止**（交換不可） |
 | x402 を BOT で払う | 可。受領した BOT は **burn** |
@@ -141,6 +147,11 @@ sector       KUMO（演算。awai L1 の固定供給 contract。mint 経路な�
 ---
 
 ## 3. BOT の contract —— 決め手は EIP-3009 であって監査コストではない
+
+> 2026-11-03 改訂: BOT は awai L1 上に deploy する（Base には deploy しない）。sink (a) の要件（EIP-3009 の
+> `transferWithAuthorization`）は変わらないので、awai L1 上の BOT contract も EIP-3009 を実装する。
+> 下の表の「Safe」は、awai L1 上の governed な発行権限（signer と承認の形は後続 ADR）に読み替える。
+> §3.1 の evm_version の議論は、Base の実測に基づく記録として残す。awai L1 の EVM 互換 profile での値は別途測る。
 
 sink (a)（x402 を BOT で払うと割引、受領分は burn）は、3 つの sink のうち唯一
 **決済需要に直結する**。そして x402 の canonical EVM scheme は `exact` で、その payload は
@@ -209,7 +220,9 @@ Base は実測で **Prague** まで有効（latest block が Cancun の blob 系
 
 ---
 
-## 5. 購入・swap 導線（Base）
+## 5. 購入・swap 導線
+
+> 2026-11-03 改訂: 購入・swap の場は **torihiki（awai L1、Itonami dapp の DEX）** とする。下の Base の導線（Uniswap v3、Base USDC）は 2026-08-31 時点の検討の記録であり、BOT の発行計画としては撤回する。x402 の決済資産としての Base USDC は外部 rail として残る。
 
 - **DEX**: Uniswap v3 factory は Base に live（`feeAmountTickSpacing(3000)` が 60 を返す）。
   初手は `BOT/USDC` 1 本。`BOT/WETH` は流動性が付いてから
@@ -262,9 +275,9 @@ requirement は既に**複数 asset を配列で返せる形**を持つので、
 | Phase | 内容 |
 |---|---|
 | 0（現在） | 設計のみ。contract 無し・配布無し・上場無し。§10 の 5 件が開いている |
-| 1 | Base に `BOT` を deploy、`BOT/USDC` に小規模 LP、sink (a) をβで通す |
+| 1 | awai L1 に `BOT` を deploy、torihiki に `BOT` の市場を作る、sink (a) をβで通す（旧版: Base に deploy） |
 | 2 | sink (b)(c)(d)、worker 報酬のオンチェーン分配、可視化ダッシュボード |
-| 3 | 手数料設計の最適化、他チェーンへの橋（**Base が出発点であり、Base への展開は Phase 3 ではない**） |
+| 3 | 手数料設計の最適化、Base 等の外部チェーンへの bridge（後続 ADR） |
 
 ---
 
@@ -281,6 +294,8 @@ requirement は既に**複数 asset を配列で返せる形**を持つので、
 ---
 
 ## 10. 発行前に塞ぐ 5 件（Base に決めても 1 件も減らない）
+
+> 2026-11-03 改訂: 発行チェーンは awai L1 に変わった。#1（Base Safe が 1-of-1）は、awai L1 上の発行権限の multisig / 承認の形に読み替える。#2〜#5 はチェーンによらず残る。
 
 | # | 塞ぐもの | 現在地（実測 2026-08-31） | 誰の領域 |
 |---|---|---|---|
@@ -321,7 +336,7 @@ token は capital を連れてくるが settlement demand は連れてこない�
 3. BOT の ticker を `BOT` のままにするか
 4. upgrade 可能にするか。**mainnet GCC は非 upgradeable を選んでいる**ので、
    `FiatTokenProxy` を採ると先例と逆になる
-5. Uniswap v3 を採るか、Base のネイティブ DEX を採るか
+5. ~~Uniswap v3 を採るか、Base のネイティブ DEX を採るか~~ → torihiki に決定（2026-11-03、BOT は awai L1）
 6. **KUMO の配分と外部変換**（2026-11-03 追加）。固定供給 21 億の配分経路、decimals、外部市場への変換の可否は、whitepaper §7 のとおり後続 ADR で決める
-7. **BOT の発行チェーンと whitepaper v2 の整合**（2026-11-03 追加）。whitepaper は発行面を awai L1 に揃える（ADR-2610271900）。本書の「BOT は ERC-20 on Base」と食い違う可能性があり、未確認
+7. ~~BOT の発行チェーン~~ → **awai L1 に決定**（owner 2026-11-03）。残るのは、awai L1 上の発行権限（Safe の代わり）の形、EIP-3009 の実装、Base への bridge の可否
 8. **torihiki DEX の上場単位と awai 外への bridge**（2026-11-03 追加）。KUMO・YATA の awai 外の市場、YATA の on-chain 表現、上場の審査主体は未決
